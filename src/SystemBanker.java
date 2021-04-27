@@ -39,6 +39,8 @@ public class SystemBanker {
             allocation[i] = process.getAllocated();
             need[i] = process.getNeed();
         }
+        isSafeState(available);
+        
         System.out.println("we done !");
     }
 
@@ -63,10 +65,15 @@ public class SystemBanker {
                     vectorSum(tmpAvailable,allocation[i]);
                     cycleChanged = true;
                     processesOrder.add(i);
+                    System.out.print("P" + i + " released its resources\t\t" + "Available : ");
+                    for (int j = 0 ; j < m ; j++)
+                        System.out.print(tmpAvailable[j] + " ");
+                    System.out.println();
                 }
             }
             if(!cycleChanged){
                 processesOrder.clear();
+                System.out.println("Unsafe state!");
                 return false;
             }
             boolean allFinished = true;
@@ -76,7 +83,10 @@ public class SystemBanker {
                     break;
                 }
             }
-            if(allFinished)return true;
+            if(allFinished) {
+            	System.out.println("Safe state!");
+            	return true;
+            }
         }
 
     }
@@ -99,7 +109,6 @@ public class SystemBanker {
 
     public void requestResource() {
         int[] request = new int[m];
-        int[] tmpAvailable = available; // if the request is not granted, the original available doen't affect
         boolean flag = true; // if true check system state (safe or not)
 
         System.out.print("Which process you want to request : ");
@@ -110,24 +119,22 @@ public class SystemBanker {
             request[i] = scanner.nextInt();
 
             // checking if there are enough available resources and need resources to be requested
-            if (request[i] > tmpAvailable[i] || request[i] > need[processNumber][i])
+            if (request[i] > available[i] || request[i] > need[processNumber][i])
                 flag = false;
         }
 
         if (flag) {
+        	/* adding request to allocation and subtract it from need and available to check state */
             for (int i = 0 ; i < m ; i++) {
-                tmpAvailable[i] -= request[i];
+                available[i] -= request[i];
                 need[processNumber][i] -= request[i];
                 allocation[processNumber][i] += request[i];
             }
-            if (isSafeState(tmpAvailable)) {
-                System.out.println("The request is granted!\nNow available resources are : ");
-
-                // subtract the original available
-                for (int i = 0 ; i < m ; i++) {
-                    available[i] -= request[i];
+            
+            if (isSafeState(available)) {
+                System.out.print("\n--> The request is granted!\nNow available resources are : ");
+                for (int i = 0 ; i < m ; i++)
                     System.out.print(available[i] + " ");
-                }
                 System.out.println();
 
                 return;
@@ -135,14 +142,15 @@ public class SystemBanker {
         }
 
         if (flag) {
-            // return to the previous state
+            // return to the previous state in case of unsafe state
             for (int i = 0 ; i < m ; i++) {
+            	available[i] += request[i];
                 need[processNumber][i] += request[i];
                 allocation[processNumber][i] -= request[i];
             }
         }
 
-        System.out.println("The request is not granted!");
+        System.out.println("\n--> The request is not granted!");
     }
 
     public void releaseResource() {
@@ -162,7 +170,7 @@ public class SystemBanker {
         }
 
         if (flag) {
-            System.out.println("Process released the given resources!\nNow available resources are : ");
+            System.out.print("\n--> Process released the given resources!\nNow available resources are : ");
 
             // releasing the resources from allocated one and adding them to available
             for (int i = 0 ; i < m ; i++) {
@@ -172,7 +180,7 @@ public class SystemBanker {
             }
             System.out.println();
         } else {
-            System.out.println("Process can't release the given resources!");
+            System.out.println("\n--> Process can't release the given resources!");
         }
     }
 
