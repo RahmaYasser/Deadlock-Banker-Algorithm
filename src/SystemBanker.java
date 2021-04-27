@@ -45,9 +45,12 @@ public class SystemBanker {
     }
 
     private void copyArray(int [] a, int[] b){
+    	System.out.print("\t\t\t\t\tAvailable : ");
         for (int i = 0; i < m; i++) {
             a[i] = b[i];
+            System.out.print(a[i] + " ");
         }
+        System.out.println();
     }
     public boolean isSafeState(int[] available){
         // you have to change the allocation as it's difficult to send it in parameters,
